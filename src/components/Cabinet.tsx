@@ -51,33 +51,33 @@ export function Cabinet({ cabinetId, color, ...props }: Props) {
       }}
     >
       {/* Back panel */}
-      <mesh position={[0, 0, -cabinetDepth / 2 + wallThickness / 2]}>
+      <mesh position={[0, 0, -cabinetDepth / 2 + wallThickness / 2]} castShadow receiveShadow>
         <boxGeometry args={[cabinetWidth, cabinetHeight, wallThickness]} />
-        <meshBasicMaterial color={cabinetColor} />
+        <meshStandardMaterial color={cabinetColor} />
       </mesh>
 
       {/* Left panel */}
-      <mesh position={[-cabinetWidth / 2 + wallThickness / 2, 0, 0]}>
+      <mesh position={[-cabinetWidth / 2 + wallThickness / 2, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[wallThickness, cabinetHeight, cabinetDepth]} />
-        <meshBasicMaterial color={cabinetColor} />
+        <meshStandardMaterial color={cabinetColor} />
       </mesh>
 
       {/* Right panel */}
-      <mesh position={[cabinetWidth / 2 - wallThickness / 2, 0, 0]}>
+      <mesh position={[cabinetWidth / 2 - wallThickness / 2, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[wallThickness, cabinetHeight, cabinetDepth]} />
-        <meshBasicMaterial color={cabinetColor} />
+        <meshStandardMaterial color={cabinetColor} />
       </mesh>
 
       {/* Top panel */}
-      <mesh position={[0, cabinetHeight / 2 - wallThickness / 2, 0]}>
+      <mesh position={[0, cabinetHeight / 2 - wallThickness / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[cabinetWidth, wallThickness, cabinetDepth]} />
-        <meshBasicMaterial color={cabinetColor} />
+        <meshStandardMaterial color={cabinetColor} />
       </mesh>
 
       {/* Bottom panel */}
-      <mesh position={[0, -cabinetHeight / 2 + wallThickness / 2, 0]}>
+      <mesh position={[0, -cabinetHeight / 2 + wallThickness / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[cabinetWidth, wallThickness, cabinetDepth]} />
-        <meshBasicMaterial color={cabinetColor} />
+        <meshStandardMaterial color={cabinetColor} />
       </mesh>
 
       {/* Shelves */}
@@ -86,9 +86,9 @@ export function Cabinet({ cabinetId, color, ...props }: Props) {
         const shelfColor = new THREE.Color(cabinetColor).multiplyScalar(0.7).getHexString()
         
         return (
-          <mesh key={i} position={[0, shelfY, 0]}>
+          <mesh key={i} position={[0, shelfY, 0]} castShadow receiveShadow>
             <boxGeometry args={[cabinetWidth - wallThickness * 2, shelfThickness, cabinetDepth - wallThickness]} />
-            <meshBasicMaterial color={`#${shelfColor}`} />
+            <meshStandardMaterial color={`#${shelfColor}`} />
           </mesh>
         )
       })}

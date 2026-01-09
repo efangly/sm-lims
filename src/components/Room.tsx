@@ -17,21 +17,22 @@ export function Room() {
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, -1.5, 0]}
         onClick={() => setFocus(null)}
+        receiveShadow
       >
         <planeGeometry args={[roomWidth, roomDepth]} />
-        <meshBasicMaterial color={colors.floor} />
+        <meshStandardMaterial color={colors.floor} />
       </mesh>
 
       {/* Back Wall */}
-      <mesh position={[0, wallHeight / 2 - 1.5, -roomDepth / 2]}>
+      <mesh position={[0, wallHeight / 2 - 1.5, -roomDepth / 2]} receiveShadow>
         <boxGeometry args={[roomWidth, wallHeight, wallThickness]} />
-        <meshBasicMaterial color={colors.backWall} />
+        <meshStandardMaterial color={colors.backWall} />
       </mesh>
 
       {/* Left Wall */}
-      <mesh position={[-roomWidth / 2, wallHeight / 2 - 1.5, 0]}>
+      <mesh position={[-roomWidth / 2, wallHeight / 2 - 1.5, 0]} receiveShadow>
         <boxGeometry args={[wallThickness, wallHeight, roomDepth]} />
-        <meshBasicMaterial color={colors.leftWall} />
+        <meshStandardMaterial color={colors.leftWall} />
       </mesh>
 
       {/* Cabinets */}

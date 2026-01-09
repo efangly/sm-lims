@@ -1,25 +1,25 @@
 /**
  * Design Tokens - Color Palette
- * Inspired by ocean and sky pastel tones
+ * Soft pastel color scheme for 3D room visualization
  */
 
 export const colors = {
   // Room surfaces
-  floor: '#f48fb1',        // Soft sky blue
-  backWall: '#f06292',     // Ocean blue
-  leftWall: '#7e57c2',     // Lavender
+  floor: '#F5E6D3',        // Warm cream
+  backWall: '#E8DDD4',     // Soft taupe
+  leftWall: '#DFE8E6',     // Pale sage
   
-  // Furniture - Ocean inspired pastels
+  // Furniture - Soft pastel palette
   cabinet: {
-    primary: '#9575cd',    // Ocean blue pastel
-    secondary: '#738ffe',  // Soft steel blue
-    tertiary: '#ff8a65',   // Misty blue
+    primary: '#B8D4E3',    // Soft sky blue
+    secondary: '#D4C4E3',  // Lavender mist
+    tertiary: '#C8E3C4',   // Mint green
   },
 
   // Interactive elements
   interactive: {
-    hover: '#C9E4F5',      // Soft blue highlight
-    selected: '#B8D9EE',   // Sky blue highlight
+    hover: '#E8F4F8',      // Soft blue highlight
+    selected: '#F0E8F8',   // Soft lavender highlight
   }
 } as const
 

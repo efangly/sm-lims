@@ -18,7 +18,29 @@ export default function App() {
       </nav>
 
       <Canvas camera={{ position: [6, 6, 12], fov: 50 }}>
+        {/* Ambient light for base illumination */}
         <ambientLight intensity={0.5} />
+        
+        {/* Main directional light with shadows */}
+        <directionalLight
+          position={[5, 10, 5]}
+          intensity={0.5}
+          castShadow
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+          shadow-camera-far={50}
+          shadow-camera-left={-10}
+          shadow-camera-right={10}
+          shadow-camera-top={10}
+          shadow-camera-bottom={-10}
+        />
+        
+        {/* Fill light from the opposite side */}
+        <directionalLight position={[-5, 5, 5]} intensity={0.4} />
+        
+        {/* Point light for subtle highlights */}
+        <pointLight position={[0, 5, 0]} intensity={0.3} />
+        
         <OrbitControls />
         <Room />
       </Canvas>
