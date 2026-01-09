@@ -1,17 +1,51 @@
 import type { ThreeElements } from '@react-three/fiber'
-import { useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import * as THREE from 'three'
 import { useFocusStore } from '../store/focus.store'
 import { colors } from '../tokens/colors'
+import { CabinetLabel } from './CabinetLabel'
 
 type Props = ThreeElements['group'] & {
   cabinetId: string
+  cabinetName?: string
   color?: string // Allow custom color override
 }
 
-export function Cabinet({ cabinetId, color, ...props }: Props) {
+export function Cabinet({ cabinetId, cabinetName, color, ...props }: Props) {
   const ref = useRef<THREE.Group>(null!)
-  const setFocus = useFocusStore((s) => s.setFocus)
+  const setCabinetFocus = useFocusStore((s) => s.setCabinetFocus)
+
+  const cabinetWidth = 2
+  const cabinetHeight = 3
+  const cabinetDepth = 1
+  const shelfThickness = 0.05
+  const shelfCount = 3
+  const wallThickness = 0.05
+
+  // Calculate shelf positions in world space
+  const shelfPositions = useMemo(() => {
+    const positions: THREE.Vector3[] = []
+    const groupPos = props.position as [number, number, number] | undefined
+    const baseX = groupPos?.[0] ?? 0
+    const baseY = groupPos?.[1] ?? 0
+    const baseZ = groupPos?.[2] ?? 0
+
+    for (let i = 0; i < shelfCount; i++) {
+      const shelfY = -cabinetHeight / 2 + ((i + 1) * cabinetHeight) / (shelfCount + 1)
+      positions.push(new THREE.Vector3(baseX, baseY + shelfY, baseZ))
+    }
+    return positions
+  }, [props.position, shelfCount, cabinetHeight])
+
+  // Get cabinet world position for label
+  const cabinetPosition = useMemo(() => {
+    const groupPos = props.position as [number, number, number] | undefined
+    return new THREE.Vector3(
+      groupPos?.[0] ?? 0,
+      groupPos?.[1] ?? 0,
+      groupPos?.[2] ?? 0
+    )
+  }, [props.position])
 
   // Assign different colors to different cabinets if no custom color provided
   const getCabinetColor = () => {
@@ -29,17 +63,15 @@ export function Cabinet({ cabinetId, color, ...props }: Props) {
   const cabinetColor = getCabinetColor()
 
   const handleClick = () => {
-    const pos = new THREE.Vector3()
-    ref.current.getWorldPosition(pos)
-    setFocus(pos)
+    setCabinetFocus({
+      cabinetId,
+      position: cabinetPosition,
+      shelfPositions,
+      currentShelf: 0
+    })
   }
 
-  const cabinetWidth = 2
-  const cabinetHeight = 3
-  const cabinetDepth = 1
-  const shelfThickness = 0.05
-  const shelfCount = 3
-  const wallThickness = 0.05
+  const displayName = cabinetName || `Cabinet ${cabinetId.split('-')[1]}`
 
   return (
     <group
@@ -50,6 +82,16 @@ export function Cabinet({ cabinetId, color, ...props }: Props) {
         handleClick()
       }}
     >
+      {/* Cabinet Label */}
+      <group position={[0, cabinetHeight / 2 + 0.5, 0]}>
+        <CabinetLabel 
+          name={displayName}
+          cabinetId={cabinetId}
+          position={cabinetPosition}
+          shelfPositions={shelfPositions}
+        />
+      </group>
+
       {/* Back panel */}
       <mesh position={[0, 0, -cabinetDepth / 2 + wallThickness / 2]} castShadow receiveShadow>
         <boxGeometry args={[cabinetWidth, cabinetHeight, wallThickness]} />
@@ -75,10 +117,10 @@ export function Cabinet({ cabinetId, color, ...props }: Props) {
       </mesh>
 
       {/* Bottom panel */}
-      <mesh position={[0, -cabinetHeight / 2 + wallThickness / 2, 0]} castShadow receiveShadow>
+      {/* <mesh position={[0, -cabinetHeight / 2 + wallThickness / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[cabinetWidth, wallThickness, cabinetDepth]} />
         <meshStandardMaterial color={cabinetColor} />
-      </mesh>
+      </mesh> */}
 
       {/* Shelves */}
       {Array.from({ length: shelfCount }).map((_, i) => {

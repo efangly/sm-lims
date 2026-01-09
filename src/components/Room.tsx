@@ -3,7 +3,7 @@ import { useFocusStore } from '../store/focus.store'
 import { colors } from '../tokens/colors'
 
 export function Room() {
-  const setFocus = useFocusStore((s) => s.setFocus)
+  const setCabinetFocus = useFocusStore((s) => s.setCabinetFocus)
 
   const roomWidth = 12
   const roomDepth = 10
@@ -16,7 +16,7 @@ export function Room() {
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, -1.5, 0]}
-        onClick={() => setFocus(null)}
+        onClick={() => setCabinetFocus(null)}
         receiveShadow
       >
         <planeGeometry args={[roomWidth, roomDepth]} />
@@ -36,9 +36,9 @@ export function Room() {
       </mesh>
 
       {/* Cabinets */}
-      <Cabinet cabinetId="cab-1" position={[-4, 0, -4]} />
-      <Cabinet cabinetId="cab-2" position={[0, 0, -4]} />
-      <Cabinet cabinetId="cab-3" position={[4, 0, -4]} />
+      <Cabinet cabinetId="cab-1" cabinetName="Storage A" position={[-4, 0, -4]} />
+      <Cabinet cabinetId="cab-2" cabinetName="Storage B" position={[0, 0, -4]} />
+      <Cabinet cabinetId="cab-3" cabinetName="Storage C" position={[4, 0, -4]} />
     </group>
   )
 }

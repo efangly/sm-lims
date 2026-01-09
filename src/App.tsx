@@ -1,8 +1,87 @@
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
 import { Room } from './components/Room'
+import { CameraController } from './components/CameraController'
+import { useFocusStore } from './store/focus.store'
+
+function ShelfNavigator() {
+  const cabinetFocus = useFocusStore((s) => s.cabinetFocus)
+  const nextShelf = useFocusStore((s) => s.nextShelf)
+  const prevShelf = useFocusStore((s) => s.prevShelf)
+  const setCabinetFocus = useFocusStore((s) => s.setCabinetFocus)
+
+  if (!cabinetFocus) return null
+
+  const { currentShelf, shelfPositions, cabinetId } = cabinetFocus
+  const totalShelves = shelfPositions.length
+  const cabinetNumber = cabinetId.split('-')[1]
+
+  return (
+    <div className="absolute top-24 right-6 z-20">
+      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 shadow-2xl border border-white/20 min-w-[200px]">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-white font-semibold text-sm">Cabinet {cabinetNumber}</h3>
+          <button
+            onClick={() => setCabinetFocus(null)}
+            className="text-white/60 hover:text-white transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+        </div>
+        
+        <div className="text-center mb-3">
+          <span className="text-white/80 text-xs">Shelf</span>
+          <div className="text-white text-2xl font-bold">
+            {currentShelf + 1} <span className="text-white/40 text-lg">/ {totalShelves}</span>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={prevShelf}
+            disabled={currentShelf === 0}
+            className="flex-1 bg-white/10 hover:bg-white/20 disabled:bg-white/5 disabled:cursor-not-allowed text-white py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm">Up</span>
+          </button>
+          <button
+            onClick={nextShelf}
+            disabled={currentShelf === totalShelves - 1}
+            className="flex-1 bg-white/10 hover:bg-white/20 disabled:bg-white/5 disabled:cursor-not-allowed text-white py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 rotate-180" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm">Down</span>
+          </button>
+        </div>
+
+        {/* Shelf indicators */}
+        <div className="flex justify-center gap-1.5 mt-3">
+          {Array.from({ length: totalShelves }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => useFocusStore.getState().setCurrentShelf(i)}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+                i === currentShelf 
+                  ? 'bg-blue-500 scale-125' 
+                  : 'bg-white/30 hover:bg-white/50'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function App() {
+  const focus = useFocusStore((s) => s.focus)
+
   return (
     <div className="w-screen h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
       {/* Header */}
@@ -41,9 +120,12 @@ export default function App() {
         {/* Point light for subtle highlights */}
         <pointLight position={[0, 5, 0]} intensity={0.3} />
         
-        <OrbitControls />
+        <CameraController focus={focus} />
         <Room />
       </Canvas>
+
+      {/* Shelf Navigator */}
+      <ShelfNavigator />
 
       {/* Instructions */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10">
