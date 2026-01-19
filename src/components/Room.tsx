@@ -1,4 +1,5 @@
 import { Cabinet } from './Cabinet'
+import { IoTDevice } from './IoTDevice'
 import { useFocusStore } from '../store/focus.store'
 import { colors } from '../tokens/colors'
 
@@ -9,6 +10,9 @@ export function Room() {
   const roomDepth = 10
   const wallHeight = 4
   const wallThickness = 0.2
+
+  // Position for IoT devices on the left wall
+  const leftWallX = -roomWidth / 2 + wallThickness / 2 + 0.06
 
   return (
     <group>
@@ -34,6 +38,20 @@ export function Room() {
         <boxGeometry args={[wallThickness, wallHeight, roomDepth]} />
         <meshStandardMaterial color={colors.leftWall} />
       </mesh>
+
+      {/* IoT Temperature Sensors on Left Wall */}
+      <IoTDevice 
+        deviceId="iot-temp-1"
+        deviceName="Sensor 1"
+        position={[leftWallX, 0.5, -2]}
+        rotation={[0, Math.PI / 2, 0]}
+      />
+      <IoTDevice 
+        deviceId="iot-temp-2"
+        deviceName="Sensor 2"
+        position={[leftWallX, 0.5, 2]}
+        rotation={[0, Math.PI / 2, 0]}
+      />
 
       {/* Cabinets */}
       <Cabinet cabinetId="cab-1" cabinetName="Storage A" position={[-4, 0, -4]} />

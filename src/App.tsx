@@ -16,8 +16,8 @@ function ShelfNavigator() {
   const cabinetNumber = cabinetId.split('-')[1]
 
   return (
-    <div className="absolute top-24 right-6 z-20">
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 shadow-2xl border border-white/20 min-w-[200px]">
+    <div className="absolute top-1/2 right-6 z-20">
+      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 shadow-2xl border border-white/20 min-w-50">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-white font-semibold text-sm">Cabinet {cabinetNumber}</h3>
           <button
@@ -126,18 +126,6 @@ export default function App() {
 
       {/* Shelf Navigator */}
       <ShelfNavigator />
-
-      {/* Instructions */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10">
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 shadow-2xl border border-white/20">
-          <div className="flex items-center gap-2 text-white/60 text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            <span>Click objects for digital twin data • Drag to rotate • Scroll to zoom</span>
-          </div>
-        </div>
-      </div>
 
       {/* Decorative elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>

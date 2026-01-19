@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { useFocusStore } from '../store/focus.store'
 import { colors } from '../tokens/colors'
 import { CabinetLabel } from './CabinetLabel'
+import { ShelfItem } from './ShelfItem'
 
 type Props = ThreeElements['group'] & {
   cabinetId: string
@@ -14,6 +15,10 @@ type Props = ThreeElements['group'] & {
 export function Cabinet({ cabinetId, cabinetName, color, ...props }: Props) {
   const ref = useRef<THREE.Group>(null!)
   const setCabinetFocus = useFocusStore((s) => s.setCabinetFocus)
+  const cabinetFocus = useFocusStore((s) => s.cabinetFocus)
+  
+  // Check if this cabinet is currently zoomed
+  const isZoomed = cabinetFocus?.cabinetId === cabinetId
 
   const cabinetWidth = 2
   const cabinetHeight = 3
@@ -22,7 +27,7 @@ export function Cabinet({ cabinetId, cabinetName, color, ...props }: Props) {
   const shelfCount = 3
   const wallThickness = 0.05
 
-  // Calculate shelf positions in world space
+  // Calculate shelf positions in world space (from top to bottom)
   const shelfPositions = useMemo(() => {
     const positions: THREE.Vector3[] = []
     const groupPos = props.position as [number, number, number] | undefined
@@ -31,7 +36,8 @@ export function Cabinet({ cabinetId, cabinetName, color, ...props }: Props) {
     const baseZ = groupPos?.[2] ?? 0
 
     for (let i = 0; i < shelfCount; i++) {
-      const shelfY = -cabinetHeight / 2 + ((i + 1) * cabinetHeight) / (shelfCount + 1)
+      // Calculate from top (i=0) to bottom (i=shelfCount-1)
+      const shelfY = cabinetHeight / 2 - ((i + 1) * cabinetHeight) / (shelfCount + 1)
       positions.push(new THREE.Vector3(baseX, baseY + shelfY, baseZ))
     }
     return positions
@@ -72,6 +78,29 @@ export function Cabinet({ cabinetId, cabinetName, color, ...props }: Props) {
   }
 
   const displayName = cabinetName || `Cabinet ${cabinetId.split('-')[1]}`
+
+  // Generate mock items for each shelf (5 items per shelf)
+  const generateShelfItems = (shelfIndex: number) => {
+    const cabinetNum = parseInt(cabinetId.split('-')[1])
+    const items = []
+    const itemTypes = ['เครื่องมือวิทยาศาสตร์', 'อุปกรณ์การแพทย์', 'สารเคมี', 'เครื่องแก้ว', 'อุปกรณ์ทดลอง']
+    const statuses: Array<'available' | 'in-use' | 'maintenance'> = ['available', 'in-use', 'maintenance']
+    
+    for (let i = 0; i < 5; i++) {
+      const itemId = `${cabinetId}-s${shelfIndex + 1}-i${i + 1}`
+      const typeIndex = (cabinetNum * 10 + shelfIndex * 5 + i) % itemTypes.length
+      const statusIndex = (cabinetNum + shelfIndex + i) % statuses.length
+      
+      items.push({
+        id: itemId,
+        name: `ไอเท็ม ${String.fromCharCode(65 + i)}${shelfIndex + 1}`,
+        type: itemTypes[typeIndex],
+        status: statuses[statusIndex],
+        quantity: Math.floor(Math.random() * 10) + 1
+      })
+    }
+    return items
+  }
 
   return (
     <group
@@ -126,12 +155,35 @@ export function Cabinet({ cabinetId, cabinetName, color, ...props }: Props) {
       {Array.from({ length: shelfCount }).map((_, i) => {
         const shelfY = -cabinetHeight / 2 + ((i + 1) * cabinetHeight) / (shelfCount + 1)
         const shelfColor = new THREE.Color(cabinetColor).multiplyScalar(0.7).getHexString()
+        const items = generateShelfItems(i)
+        const itemSpacing = (cabinetWidth - wallThickness * 2 - 0.3 * 5) / 6
+        // shelfPositions: 0=top, 2=bottom | render: 0=bottom, 2=top -> need to reverse
+        const isCurrentShelf = isZoomed && cabinetFocus?.currentShelf === (shelfCount - 1 - i)
         
         return (
-          <mesh key={i} position={[0, shelfY, 0]} castShadow receiveShadow>
-            <boxGeometry args={[cabinetWidth - wallThickness * 2, shelfThickness, cabinetDepth - wallThickness]} />
-            <meshStandardMaterial color={`#${shelfColor}`} />
-          </mesh>
+          <group key={i}>
+            {/* Shelf surface */}
+            <mesh position={[0, shelfY, 0]} castShadow receiveShadow>
+              <boxGeometry args={[cabinetWidth - wallThickness * 2, shelfThickness, cabinetDepth - wallThickness]} />
+              <meshStandardMaterial color={`#${shelfColor}`} />
+            </mesh>
+            
+            {/* Items on shelf */}
+            {items.map((item, itemIndex) => {
+              const itemX = -cabinetWidth / 2 + wallThickness + itemSpacing + (itemIndex * (0.3 + itemSpacing)) + 0.15
+              const itemY = shelfY + shelfThickness / 2 + 0.15
+              const itemZ = 0
+              
+              return (
+                <ShelfItem
+                  key={item.id}
+                  item={item}
+                  position={[itemX, itemY, itemZ]}
+                  isZoomed={isCurrentShelf}
+                />
+              )
+            })}
+          </group>
         )
       })}
     </group>

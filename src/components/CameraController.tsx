@@ -19,12 +19,12 @@ export function CameraController({
     if (focus) {
       isAnimating.current = true
       target.current.copy(focus)
-      // Position camera closer to see the shelf better
-      camPos.current.copy(focus).add(new THREE.Vector3(0, 0.5, 3))
+      // Position camera much closer to see shelf items clearly
+      camPos.current.copy(focus).add(new THREE.Vector3(0, 0.3, 1.5))
     } else {
       isAnimating.current = true
       // Reset to default view
-      target.current.set(0, 0, 0)
+      target.current.set(0, -2.5, 0)
       camPos.current.set(6, 6, 12)
     }
   }, [focus])
@@ -44,5 +44,16 @@ export function CameraController({
     }
   })
 
-  return <OrbitControls ref={controls} enableDamping maxPolarAngle={Math.PI / 2} />
+  return (
+    <OrbitControls 
+      ref={controls} 
+      enableDamping 
+      maxPolarAngle={Math.PI / 3}
+      minAzimuthAngle={-Math.PI / 3}
+      maxAzimuthAngle={Math.PI / 3}
+      enableZoom={!focus}
+      enablePan={!focus}
+      enableRotate={!focus}
+    />
+  )
 }
