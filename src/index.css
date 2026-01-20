@@ -14,3 +14,41 @@
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
 }
+
+/* Mobile responsive improvements */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Prevent text selection during 3D interaction */
+canvas {
+  touch-action: none;
+}
+
+/* Better scrolling on mobile */
+body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Viewport height fix for mobile browsers */
+.h-screen {
+  height: 100vh;
+  height: 100dvh; /* dynamic viewport height */
+}
+
+/* Responsive font sizes */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* Improve button touch targets on mobile */
+@media (max-width: 768px) {
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

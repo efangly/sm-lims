@@ -1,10 +1,13 @@
 import { Html } from '@react-three/drei'
 import { useEffect, useState, useRef } from 'react'
 import type { ThreeElements } from '@react-three/fiber'
+import mqtt from 'mqtt'
 
 interface IoTDeviceProps extends Omit<ThreeElements['group'], 'ref'> {
   deviceId: string
   deviceName: string
+  mqttBrokerUrl?: string
+  mqttTopic?: string
   socketUrl?: string
 }
 
@@ -14,18 +17,79 @@ interface TemperatureData {
   timestamp: Date
 }
 
-export function IoTDevice({ deviceId, deviceName, socketUrl, ...props }: IoTDeviceProps) {
+export function IoTDevice({ deviceId, deviceName, mqttBrokerUrl, mqttTopic = 'test', socketUrl, ...props }: IoTDeviceProps) {
   const [data, setData] = useState<TemperatureData>({
     temperature: 25.0,
     humidity: 60,
     timestamp: new Date()
   })
   const [isConnected, setIsConnected] = useState(false)
+  const mqttClientRef = useRef<mqtt.MqttClient | null>(null)
   const socketRef = useRef<WebSocket | null>(null)
 
-  // Simulate real-time data when no socket URL is provided
+  // Connect to MQTT or WebSocket or simulate data
   useEffect(() => {
-    if (socketUrl) {
+    if (mqttBrokerUrl) {
+      // Connect to MQTT broker
+      try {
+        console.log(`Connecting to MQTT broker: ${mqttBrokerUrl}`)
+        mqttClientRef.current = mqtt.connect(mqttBrokerUrl, {
+          clientId: `iot-device-${deviceId}-${Math.random().toString(16).substr(2, 8)}`,
+          keepalive: 30,
+          reconnectPeriod: 5000,
+          username: 'admin',
+          password: 'admin'
+        })
+
+        mqttClientRef.current.on('connect', () => {
+          setIsConnected(true)
+          console.log(`IoT Device ${deviceId} connected to MQTT broker`)
+          
+          // Subscribe to topic
+          mqttClientRef.current?.subscribe(mqttTopic, (err) => {
+            if (err) {
+              console.error(`Failed to subscribe to topic ${mqttTopic}:`, err)
+            } else {
+              console.log(`Subscribed to topic: ${mqttTopic}`)
+            }
+          })
+        })
+
+        mqttClientRef.current.on('message', (topic, message) => {
+          try {
+            const payload = JSON.parse(message.toString())
+            console.log(`Received message on topic ${topic}:`, payload)
+            
+            setData({
+              temperature: payload.temp ?? payload.temperature ?? data.temperature,
+              humidity: payload.humi ?? payload.humidity ?? data.humidity,
+              timestamp: new Date()
+            })
+          } catch (e) {
+            console.error('Failed to parse MQTT message:', e)
+          }
+        })
+
+        mqttClientRef.current.on('error', (error) => {
+          console.error(`IoT Device ${deviceId} MQTT error:`, error)
+          setIsConnected(false)
+        })
+
+        mqttClientRef.current.on('close', () => {
+          setIsConnected(false)
+          console.log(`IoT Device ${deviceId} disconnected from MQTT`)
+        })
+
+        return () => {
+          if (mqttClientRef.current) {
+            mqttClientRef.current.unsubscribe(mqttTopic)
+            mqttClientRef.current.end()
+          }
+        }
+      } catch (error) {
+        console.error('Failed to connect to MQTT broker:', error)
+      }
+    } else if (socketUrl) {
       // Connect to real WebSocket
       try {
         socketRef.current = new WebSocket(socketUrl)
@@ -77,7 +141,7 @@ export function IoTDevice({ deviceId, deviceName, socketUrl, ...props }: IoTDevi
 
       return () => clearInterval(interval)
     }
-  }, [socketUrl, deviceId])
+  }, [mqttBrokerUrl, mqttTopic, socketUrl, deviceId])
 
   const getTemperatureColor = (temp: number) => {
     if (temp < 20) return '#3b82f6' // blue - cold
@@ -130,13 +194,13 @@ export function IoTDevice({ deviceId, deviceName, socketUrl, ...props }: IoTDevi
           style={{
             background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%)',
             color: '#fff',
-            padding: '12px 16px',
-            fontSize: 13,
+            padding: '14px 18px',
+            fontSize: 16,
             borderRadius: 12,
             whiteSpace: 'nowrap',
             border: `2px solid ${tempColor}`,
             boxShadow: `0 4px 20px ${tempColor}40`,
-            minWidth: 160,
+            minWidth: 180,
           }}
         >
           {/* Header */}
@@ -149,18 +213,18 @@ export function IoTDevice({ deviceId, deviceName, socketUrl, ...props }: IoTDevi
             borderBottom: '1px solid rgba(255,255,255,0.1)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={tempColor} strokeWidth="2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={tempColor} strokeWidth="2">
                 <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/>
               </svg>
-              <span style={{ fontWeight: 600, fontSize: 14 }}>{deviceName}</span>
+              <span style={{ fontWeight: 600, fontSize: 16 }}>{deviceName}</span>
             </div>
             <div
               style={{
-                width: 10,
-                height: 10,
+                width: 12,
+                height: 12,
                 borderRadius: '50%',
                 backgroundColor: isConnected ? '#10b981' : '#ef4444',
-                boxShadow: `0 0 10px ${isConnected ? '#10b981' : '#ef4444'}`,
+                boxShadow: `0 0 12px ${isConnected ? '#10b981' : '#ef4444'}`,
               }}
             />
           </div>
@@ -170,17 +234,17 @@ export function IoTDevice({ deviceId, deviceName, socketUrl, ...props }: IoTDevi
             display: 'flex', 
             alignItems: 'baseline',
             justifyContent: 'center',
-            marginBottom: 8
+            marginBottom: 10
           }}>
             <span style={{ 
-              fontSize: 32, 
+              fontSize: 38, 
               fontWeight: 700, 
               color: tempColor,
               fontFamily: 'monospace'
             }}>
-              {data.temperature.toFixed(1)}
+              {data.temperature.toFixed(2)}
             </span>
-            <span style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)', marginLeft: 3 }}>°C</span>
+            <span style={{ fontSize: 18, color: 'rgba(255,255,255,0.6)', marginLeft: 3 }}>°C</span>
           </div>
 
           {/* Humidity */}
@@ -188,11 +252,12 @@ export function IoTDevice({ deviceId, deviceName, socketUrl, ...props }: IoTDevi
             display: 'flex', 
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 6,
-            fontSize: 13,
-            color: 'rgba(255,255,255,0.7)'
+            gap: 8,
+            fontSize: 16,
+            fontWeight: 600,
+            color: 'rgba(255,255,255,0.85)'
           }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
             </svg>
             <span>ความชื้น: {data.humidity.toFixed(0)}%</span>
@@ -200,10 +265,10 @@ export function IoTDevice({ deviceId, deviceName, socketUrl, ...props }: IoTDevi
 
           {/* Timestamp */}
           <div style={{ 
-            marginTop: 8,
-            paddingTop: 8,
+            marginTop: 10,
+            paddingTop: 10,
             borderTop: '1px solid rgba(255,255,255,0.1)',
-            fontSize: 11,
+            fontSize: 12,
             color: 'rgba(255,255,255,0.5)',
             textAlign: 'center'
           }}>

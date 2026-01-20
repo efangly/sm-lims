@@ -54,6 +54,10 @@ export function CameraController({
       enableZoom={!focus}
       enablePan={!focus}
       enableRotate={!focus}
+      touches={{
+        ONE: THREE.TOUCH.ROTATE,
+        TWO: THREE.TOUCH.DOLLY_PAN
+      }}
     />
   )
 }

@@ -43,12 +43,16 @@ export function Room() {
       <IoTDevice 
         deviceId="iot-temp-1"
         deviceName="Sensor 1"
+        mqttBrokerUrl="wss://siamatic.co.th:8084/mqtt"
+        mqttTopic="eTPV2-2P-L0168-1068-058/1/temp/real"
         position={[leftWallX, 0.5, -2]}
         rotation={[0, Math.PI / 2, 0]}
       />
       <IoTDevice 
         deviceId="iot-temp-2"
         deviceName="Sensor 2"
+        mqttBrokerUrl="wss://siamatic.co.th:8084/mqtt"
+        mqttTopic="eTPV2-2P-L0168-1068-058/2/temp/real"
         position={[leftWallX, 0.5, 2]}
         rotation={[0, Math.PI / 2, 0]}
       />
